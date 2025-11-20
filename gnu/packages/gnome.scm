@@ -3331,7 +3331,7 @@ the GNOME desktop environment.")
     (native-inputs (list gtk
                          libadwaita
                          python
-                         python-pygobject
+                         python-pygobject-3.50
                          xorg-server-for-tests))
     (inputs (list python))
     (synopsis "Template markup language")
