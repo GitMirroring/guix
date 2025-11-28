@@ -1547,13 +1547,14 @@ tour of all gnome components and allows the user to set them up.")
            #:configure-flags
            #~(list "-Dsystemduserunitdir=/tmp/empty")
            #:phases
-           #~(modify-phases %standard-phases
-               (add-after 'unpack 'unpack-rust-crates
-                 (assoc-ref cargo:%standard-phases 'unpack-rust-crates))
-               (add-before 'configure 'cargo:configure
-                 (assoc-ref cargo:%standard-phases 'configure))
-               (add-before 'configure 'cargo:patch-checksums
-                 (assoc-ref cargo:%standard-phases 'patch-cargo-checksums)))))
+           (with-extensions (list (cargo-guile-json))
+             #~(modify-phases %standard-phases
+                 (add-after 'unpack 'unpack-rust-crates
+                   (assoc-ref cargo:%standard-phases 'unpack-rust-crates))
+                 (add-before 'configure 'cargo:configure
+                   (assoc-ref cargo:%standard-phases 'configure))
+                 (add-before 'configure 'cargo:patch-checksums
+                   (assoc-ref cargo:%standard-phases 'patch-cargo-checksums))))))
     (native-inputs
      (list gettext-minimal
            `(,glib "bin")
