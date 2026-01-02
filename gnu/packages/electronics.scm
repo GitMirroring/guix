@@ -1875,31 +1875,21 @@ exploration and optimization.")
               (commit version)
               (recursive? #t)))
        (file-name (git-file-name name version))
-       (modules '((guix build utils)
-                  (ice-9 ftw)
-                  (srfi srfi-26)))
+       (modules '((guix build utils)))
        (snippet
-        #~(begin
-            ;; XXX: 'delete-all-but' is copied from the turbovnc package.
-            (define (delete-all-but directory . preserve)
-              (with-directory-excursion directory
-                (let* ((pred (negate (cut member <>
-                                          (cons* "." ".." preserve))))
-                       (items (scandir "." pred)))
-                  (for-each (cut delete-file-recursively <>) items))))
-            (delete-all-but "libs"
-                            "delaunay-triangulation"
-                            "dxflib"
-                            ;; "fontobene-qt"
-                            ;; "googletest"
-                            ;; "hoedown"
-                            "librepcb"
-                            ;; "muparser"
-                            "optional"
-                            "parseagle"
-                            ;; "polyclipping"
-                            ;; "quazip"
-                            "type_safe")))
+        #~(delete-all-but "libs"
+            "delaunay-triangulation"
+            "dxflib"
+            ;; "fontobene-qt"
+            ;; "googletest"
+            ;; "hoedown"
+            "librepcb"
+            ;; "muparser"
+            "optional"
+            "parseagle"
+            ;; "polyclipping"
+            ;; "quazip"
+            "type_safe"))
        (sha256
         (base32 "1g3k2g2p5yy7zk971bg7qh4k38p30aydp27c5bfb02gn7djknz7w"))))
     (build-system qt-build-system)
@@ -2486,18 +2476,9 @@ layout of a circuit corresponds to the desired netlists.")
               ;; no longer have their original upstream.
               (recursive? #t)))
        (file-name (git-file-name name version))
+       (modules '((guix build utils)))
        (snippet
         #~(begin
-            (use-modules (guix build utils)
-                         (ice-9 ftw)
-                         (srfi srfi-26))
-            ;; XXX: 'delete-all-but' is copied from the turbovnc package.
-            (define (delete-all-but directory . preserve)
-              (with-directory-excursion directory
-                (let* ((pred (negate (cut member <>
-                                          (cons* "." ".." preserve))))
-                       (items (scandir "." pred)))
-                  (for-each (cut delete-file-recursively <>) items))))
             (delete-all-but "3rdparty"
                             ;; The following sources have all been patched, so
                             ;; cannot easily be unbundled.
