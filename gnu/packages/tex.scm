@@ -270,14 +270,11 @@
     (version "2025.2")
     (source
      (origin
-       ;; This could be written as a SVN reference, but with a multi-reference
-       ;; the package can benefit from the `texlive' updater.
-       (method svn-multi-fetch)
-       (uri (svn-multi-reference
+       (method svn-fetch)
+       (uri (svn-reference
              (url (string-append %texlive-repository
                                  "tags/texlive-" version "/Build/source"))
-             (revision 74725)
-             (locations (list "./"))))
+             (revision 74725)))
        (file-name (git-file-name name version))
        (sha256
         (base32
