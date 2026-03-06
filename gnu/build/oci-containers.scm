@@ -39,7 +39,21 @@
             oci-container-execlp
             oci-object-create))
 
-(define* (oci-read-lines invocation #:key verbose?)
+(define (oci-log level port format-string . args)
+  (define log-level
+    (format #f "[~a] " (string-upcase (symbol->string level))))
+  (define message
+    (apply format `(#f ,format-string ,@args)))
+  (format port "~a~a" log-level message))
+
+(define* (oci-log-debug log-port format-string . args)
+  (apply oci-log `(debug ,log-port ,format-string ,@args)))
+(define* (oci-log-info log-port format-string . args)
+  (apply oci-log `(info ,log-port ,format-string ,@args)))
+
+(define* (oci-read-lines invocation
+                         #:key verbose?
+                         (log-port (current-error-port)))
   (define (get-lines port)
     (let ((lines-string (get-string-all port)))
       (string-split lines-string #\newline)))
@@ -47,14 +61,16 @@
   (define command
    (string-join invocation " "))
 
-  (when verbose? (format #t "Running ~a~%" command))
+  (when verbose?
+    (oci-log-debug log-port "Running ~a~%" command))
 
   (with-input-from-port (open-input-pipe command)
     (lambda _
       (get-lines (current-input-port)))))
 
-(define* (oci-log-verbose invocation)
-  (format #t "Running in verbose mode...
+(define* (oci-log-verbose invocation
+                          #:key (log-port (current-error-port)))
+  (oci-log-debug log-port "Running in verbose mode...
 Current user: ~a ~a
 Current group: ~a ~a
 Current directory: ~a~%"
@@ -62,33 +78,37 @@ Current directory: ~a~%"
           (getgid) (group:name (getgrgid (getgid)))
           (getcwd))
 
-  (format #t "Running~{ ~a~}~%" invocation))
+  (oci-log-debug log-port "Running~{ ~a~}~%" invocation))
 
-(define* (oci-system* invocation #:key verbose?)
+(define* (oci-system* invocation
+                      #:key verbose?
+                      (log-port (current-error-port)))
   (when verbose?
-    (format #t "Running~{ ~a~}~%" invocation))
+    (oci-log-debug log-port "Running~{ ~a~}~%" invocation))
 
   (let* ((status (apply system* invocation))
          (exit-code (status:exit-val status)))
     (when verbose?
-      (format #t "Exit code: ~a~%" exit-code))
+      (oci-log-debug log-port "Exit code: ~a~%" exit-code))
     status))
 
 (define* (oci-object-member name objects
-                            #:key verbose?)
+                            #:key verbose?
+                            (log-port (current-error-port)))
 
   (define member? (member name objects))
 
   (when (and verbose? (> (length objects) 0))
-    (format #t "~a is ~apart of:~{ ~a~}~%"
-            name
-            (if member? "" "not ")
-            objects))
+    (oci-log-debug log-port "~a is ~apart of:~{ ~a~}~%"
+                   name
+                   (if member? "" "not ")
+                   objects))
   member?)
 
 (define* (oci-object-list runtime-cli object
                           #:key verbose?
-                          (format-string "{{.Name}}"))
+                          (format-string "{{.Name}}")
+                          (log-port (current-error-port)))
 
   (define invocation
     (list runtime-cli object "ls" "--format"
@@ -101,7 +121,8 @@ Current directory: ~a~%"
 
 (define* (docker-object-exist? runtime-cli object name
                                #:key verbose?
-                               (format-string "{{.Name}}"))
+                               (format-string "{{.Name}}")
+                               (log-port (current-error-port)))
 
   (define objects
     (oci-object-list runtime-cli object
@@ -110,7 +131,9 @@ Current directory: ~a~%"
 
   (oci-object-member name objects #:verbose? verbose?))
 
-(define* (podman-object-exist? runtime-cli object name #:key verbose?)
+(define* (podman-object-exist? runtime-cli object name
+                               #:key verbose?
+                               (log-port (current-error-port)))
   (let ((invocation (list runtime-cli object "exists" name)))
     (define exit-code
       (status:exit-val (oci-system* invocation #:verbose? verbose?)))
@@ -118,7 +141,8 @@ Current directory: ~a~%"
 
 (define* (oci-object-exists? runtime runtime-cli object name
                              #:key verbose?
-                             (format-string "{{.Name}}"))
+                             (format-string "{{.Name}}")
+                             (log-port (current-error-port)))
   (if (eq? runtime 'podman)
       (podman-object-exist? runtime-cli object name
                             #:verbose? verbose?)
@@ -128,14 +152,15 @@ Current directory: ~a~%"
 
 (define* (oci-object-service-available? runtime-cli object names
                                         #:key verbose?
-                                        (format-string "{{.Name}}"))
+                                        (format-string "{{.Name}}")
+                                        (log-port (current-error-port)))
   "Whether NAMES are provisioned in the current OBJECT environment."
   (define environment
     (oci-object-list runtime-cli object
                      #:verbose? verbose?
                      #:format-string format-string))
   (when verbose?
-    (format #t "~a environment:~{ ~a~}~%" object environment))
+    (oci-log-debug log-port "~a environment:~{ ~a~}~%" object environment))
 
   (define available?
     (every
@@ -144,29 +169,30 @@ Current directory: ~a~%"
      names))
 
   (when verbose?
-   (format #t "~a service is~a available~%" object (if available? "" " not")))
+   (oci-log-debug log-port "~a service is~a available~%" object (if available? "" " not")))
 
   available?)
 
 (define* (oci-image-load runtime runtime-cli tarball name tag
                          #:key verbose?
-                         (format-string "{{.Repository}}:{{.Tag}}"))
+                         (format-string "{{.Repository}}:{{.Tag}}")
+                         (log-port (current-error-port)))
   (define load-invocation
     (list runtime-cli "load" "-i" tarball))
 
   (if (oci-object-exists? runtime runtime-cli "image" tag
                           #:verbose? verbose?
                           #:format-string format-string)
-      (format #t "~a image already exists, skipping.~%" tag)
+      (oci-log-info log-port "~a image already exists, skipping.~%" tag)
       (begin
-        (format #t "Loading image for ~a from ~a...~%" name tarball)
+        (oci-log-info log-port "Loading image for ~a from ~a...~%" name tarball)
 
         (let ((line (first
                      (oci-read-lines load-invocation #:verbose? verbose?))))
           (unless (or (eof-object? line)
                       (string-null? line))
 
-            (format #t "~a~%" line)
+            (format log-port "~a~%" line)
 
             (let* ((repository&tag
                     (string-drop line
@@ -181,12 +207,14 @@ Current directory: ~a~%"
                 (let ((exit-code
                        (status:exit-val
                         (oci-system* tag-invocation #:verbose? verbose?))))
-                  (format #t "Tagged ~a with ~a...~%" tarball tag)
+                  (oci-log-info log-port "Tagged ~a with ~a...~%" tarball tag)
 
                   (when (equal? EXIT_SUCCESS exit-code)
                     (oci-system* drop-old-tag-invocation #:verbose? verbose?))))))))))
 
-(define* (oci-container-execlp invocation #:key verbose? pre-script)
+(define* (oci-container-execlp invocation
+                               #:key verbose? pre-script
+                               (log-port (current-error-port)))
   (when pre-script
     (pre-script))
   (when verbose?
@@ -197,14 +225,15 @@ Current directory: ~a~%"
                             object
                             invocations
                             #:key verbose?
-                            (format-string "{{.Name}}"))
+                            (format-string "{{.Name}}")
+                            (log-port (current-error-port)))
   (for-each
    (lambda (invocation)
      (define name (last invocation))
      (if (oci-object-exists? runtime runtime-cli object name
                              #:format-string format-string
                              #:verbose? verbose?)
-         (format #t "~a ~a ~a already exists, skipping creation.~%"
-                 runtime-name name object)
+         (oci-log-info log-port "~a ~a ~a already exists, skipping creation.~%"
+                       runtime-name name object)
          (oci-system* invocation #:verbose? verbose?)))
    invocations))
