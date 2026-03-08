@@ -203,39 +203,44 @@
 ;;; automated.  Yet, the following additional steps are required, and they can
 ;;; keep one busy for a while:
 ;;;
-;;; 1. First and foremost, run the updater and log the (verbose) output:
+;;; 1. First and foremost, import newly integrated packages by refreshing all
+;;;    "collections" with, e.g.,
 ;;;
-;;;      ./pre-inst-env guix refresh -t texlive -u > update.log 2>&1
+;;;       ./pre-inst-env guix import texlive -r collection-NAME >> \
+;;;       ~/texlive-new-packages.scm 2>&1
+;;;
+;;;    It is advisable to iterate the command above over the list of all their
+;;;    names:
+;;;
+;;;      basic bibtexextra binextra context fontextra fontsrecommended \
+;;;      fontutils formatsextra games humanities langarabic langchinese \
+;;;      langcjk langcyrillic langczechslovak langenglish langeuropean \
+;;;      langfrench langgerman langgreek langitalian langjapanese langkorean \
+;;;      langother langpolish langportuguese langspanish latex latexextra \
+;;;      latexrecommended luatex mathscience metapost music pictures \
+;;;      plaingeneric pstricks publishers xetex
+;;;
+;;;    New packages usually need to be edited, if only to improve their
+;;;    synopsis and description.  They can be added at the end of the
+;;;    "tex.scm" file.  You also have to update propagated inputs from
+;;;    collections including these new packages.
+;;;
+;;; 2. Then, run the updater and log the (verbose) output:
+;;;
+;;;      ./pre-inst-env guix refresh -t texlive -u > ~/texlive-update.log 2>&1
+;;;
+;;;    Note: Only lines referring to "warning" are interesting is this output.
 ;;;
 ;;;    This takes care of updating all binaries and all TeX Live packages,
 ;;;    barring "collections" and "schemes", in a single run.
 ;;;
-;;; 2. Then delete packages absent from the new TeX Live version.  Those are
+;;; 3. Now, delete packages absent from the new TeX Live version.  Those are
 ;;;    usually indicated by a failed update, or, more obviously, by their
 ;;;    outdated version in the module.
 ;;;
 ;;;    Since "collections" and "schemes" are not updated automatically, all
 ;;;    references to deleted packages must also be cleared from their
 ;;;    propagated inputs.
-;;;
-;;; 3. Conversely, import newly integrated packages by refreshing all
-;;;    "collections" with, e.g.,
-;;;
-;;;       ./pre-inst-env guix import texlive -r collection-NAME >> \
-;;;       new-packages.scm 2>&1
-;;;
-;;;    It is advisable to iterate the command above over the list of all their
-;;;    names:
-;;;
-;;;      basic bibtexextra binextra context fontextra fontsrecommended
-;;;      fontutils formatsextra games humanities langarabic langchinese
-;;;      langcjk langcyrillic langczechslovak langenglish langeuropean
-;;;      langfrench langgerman langgreek langitalian langjapanese langkorean
-;;;      langother langpolish langportuguese langspanish latex latexextra
-;;;      latexrecommended luatex mathscience metapost music pictures
-;;;      plaingeneric pstricks publishers xetex
-;;;
-;;;    Propagated inputs of collections must be updated accordingly.
 ;;;
 ;;; 4. Handle inputs issues.  No updater is allowed to create an input field
 ;;;    in a package if it didn't exist beforehand.  `texlive' updater is no
@@ -254,8 +259,8 @@
 ;;;
 ;;;      libkpathsea > bin > latex-bin > scheme-basic > scheme-small
 ;;;
-;;;    Also, for good measure, it is advisable to check some common
-;;;    "collections" such as "pictures" and (gulp!) "latexextra".
+;;;    Also, for good measure, it is advisable to try building newly included
+;;;    packages.
 ;;;
 ;;;    At this point, if all is fine, send the update to the ML and let the CI
 ;;;    sort the rest out.
