@@ -149,58 +149,44 @@
            marionette)
 
           (test-assert "services started successfully and /sys/fs/cgroup has correct permissions"
-            (begin
-              (define (run-test)
-                (marionette-eval
-                 `(begin
-                    (use-modules (ice-9 popen)
-                                 (ice-9 match)
-                                 (ice-9 rdelim))
+            (marionette-eval
+             `(begin
+                (use-modules (ice-9 popen)
+                             (ice-9 match)
+                             (ice-9 rdelim))
 
-                    (define (read-lines file-or-port)
-                      (define (loop-lines port)
-                        (let loop ((lines '()))
-                          (match (read-line port)
-                            ((? eof-object?)
-                             (reverse lines))
-                            (line
-                             (loop (cons line lines))))))
+                (define (read-lines file-or-port)
+                  (define (loop-lines port)
+                    (let loop ((lines '()))
+                      (match (read-line port)
+                        ((? eof-object?)
+                         (reverse lines))
+                        (line
+                         (loop (cons line lines))))))
 
-                      (if (port? file-or-port)
-                          (loop-lines file-or-port)
-                          (call-with-input-file file-or-port
-                            loop-lines)))
+                  (if (port? file-or-port)
+                      (loop-lines file-or-port)
+                      (call-with-input-file file-or-port
+                        loop-lines)))
 
-                    (define slurp
-                      (lambda args
-                        (let* ((port (apply open-pipe* OPEN_READ args))
-                               (output (read-lines port))
-                               (status (close-pipe port)))
-                          output)))
-                    (let* ((bash
-                            (string-append #$bash "/bin/bash"))
-                           (response1
-                            (slurp bash "-c"
-                                   (string-append "ls -la /sys/fs/cgroup | "
-                                                  "grep -E ' \\./?$' | awk '{ print $4 }'")))
-                           (response2 (slurp bash "-c"
-                                             (string-append "ls -l /sys/fs/cgroup/cgroup"
-                                                            ".{procs,subtree_control,threads} | "
-                                                            "awk '{ print $4 }' | sort -u"))))
-                      (list (string-join response1 "\n") (string-join response2 "\n"))))
-                 marionette))
-              ;; Allow services to come up on slower machines
-              (let loop ((attempts 0))
-                (if (= attempts 60)
-                    (error "Services didn't come up after more than 60 seconds")
-                    (if (equal? '("cgroup" "cgroup")
-                                (run-test))
-                        #t
-                        (begin
-                          (sleep 1)
-                          (format #t "Services didn't come up yet, retrying with attempt ~a~%"
-                                  (+ 1 attempts))
-                          (loop (+ 1 attempts))))))))
+                (define slurp
+                  (lambda args
+                    (let* ((port (apply open-pipe* OPEN_READ args))
+                           (output (read-lines port))
+                           (status (close-pipe port)))
+                      output)))
+                (let* ((bash
+                        (string-append #$bash "/bin/bash"))
+                       (response1
+                        (slurp bash "-c"
+                               (string-append "ls -la /sys/fs/cgroup | "
+                                              "grep -E ' \\./?$' | awk '{ print $4 }'")))
+                       (response2 (slurp bash "-c"
+                                         (string-append "ls -l /sys/fs/cgroup/cgroup"
+                                                        ".{procs,subtree_control,threads} | "
+                                                        "awk '{ print $4 }' | sort -u"))))
+                  (list (string-join response1 "\n") (string-join response2 "\n"))))
+             marionette))
 
           (test-equal "/sys/fs/cgroup/cgroup.subtree_control content is sound"
             (list "cpu" "cpuset" "io" "memory" "pids")

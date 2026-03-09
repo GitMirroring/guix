@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2024, 2025 Giacomo Leidi <therewasa@fishinthecalculator.me>
+;;; Copyright © 2024-2026 Giacomo Leidi <therewasa@fishinthecalculator.me>
 ;;; Copyright © 2025 Owen T. Heisler <writer@owenh.net>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -290,11 +290,11 @@ available for each configured user."))
                     (documentation
                      "Set ownership of /sys/fs/cgroup to the configured group.")
                     (start
-                     #~(make-forkexec-constructor
-                        (list
-                         #$(cgroups-fs-owner-entrypoint config))))
+                     #~(lambda ()
+                         (zero?
+                          (system* #$(cgroups-fs-owner-entrypoint config)))))
                     (stop
-                     #~(make-kill-destructor))))
+                     #~(const #f))))
 
 (define cgroups-limits-entrypoint
   (program-file "cgroups2-limits-entrypoint"
@@ -319,11 +319,11 @@ available for each configured user."))
                      "Allow setting cgroups limits: cpu, cpuset, io, memory and
 pids.")
                     (start
-                     #~(make-forkexec-constructor
-                        (list
-                         #$cgroups-limits-entrypoint)))
+                     #~(lambda ()
+                         (zero?
+                          (system* #$cgroups-limits-entrypoint))))
                     (stop
-                     #~(make-kill-destructor))))
+                     #~(const #f))))
 
 (define rootless-podman-shared-root-fs-entrypoint
   (program-file "rootless-podman-shared-root-fs-entrypoint"
@@ -339,11 +339,12 @@ pids.")
                      "Buildah/Podman running as rootless expects the bind mount
 to be shared.  This service sets it so.")
                     (start
-                     #~(make-forkexec-constructor
-                        (list
-                         #$rootless-podman-shared-root-fs-entrypoint)))
+                     #~(lambda ()
+                         (zero?
+                          (system*
+                           #$rootless-podman-shared-root-fs-entrypoint))))
                     (stop
-                     #~(make-kill-destructor))))
+                     #~(const #f))))
 
 (define (rootless-podman-shepherd-services config)
   (list
