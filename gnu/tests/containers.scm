@@ -637,7 +637,7 @@ in the past.")
           (marionette-eval
            '(begin
               (use-modules (gnu services herd))
-              (wait-for-service 'user-processes))
+              (wait-for-service 'podman-volumes #:timeout 80))
            marionette)
 
           (test-assert "podman-volumes running"
@@ -687,7 +687,7 @@ in the past.")
                              #:verbose? #t))))
                   marionette)))
               ;; Allow services to come up on slower machines.
-              (with-retries 120 1
+              (with-retries 240 1
                             (equal?
                              '("localhost/guile:latest")
                              (run-test)))))

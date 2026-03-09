@@ -1430,12 +1430,13 @@ by INVOCATIONS through RUNTIME-STATE."
                         " provisioning service"))
                       (start
                        #~(lambda _
-                           (fork+exec-command
-                            (list #$entrypoint)
-                            #$@(if user (list #:user user) '())
-                            #$@(if group (list #:group group) '())
-                            #:environment-variables
-                            (list #$@runtime-environment))))
+                           (zero?
+                            (spawn-command
+                             (list #$entrypoint)
+                             #$@(if user (list #:user user) '())
+                             #$@(if group (list #:group group) '())
+                             #:environment-variables
+                             (list #$@runtime-environment)))))
                       (actions
                        (list
                         (oci-command-line-shepherd-action
