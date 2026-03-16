@@ -942,6 +942,11 @@ image field."
       (string-append (symbol->string runtime) "-"
                      (oci-image->container-name image))))
 
+(define (oci-image-loader-shepherd-name runtime config)
+  "Return the name of the OCI image provisioning Shepherd service based on
+RUNTIME for the container described in CONFIG."
+  (string-append (oci-container-shepherd-name runtime config) "-image"))
+
 (define (oci-networks-shepherd-name runtime)
   "Return the name of the OCI networks provisioning Shepherd service based on
 RUNTIME."
@@ -953,7 +958,7 @@ RUNTIME."
   (string-append (symbol->string runtime) "-volumes"))
 
 (define (oci-networks-home-shepherd-name runtime)
-  "Return the name of the OCI volumes provisioning Home Shepherd service based on
+  "Return the name of the OCI networks provisioning Home Shepherd service based on
 RUNTIME."
   (string-append "home-" (oci-networks-shepherd-name runtime)))
 
@@ -1161,9 +1166,7 @@ operating-system, or file-like records but ~a was found")
   oci-container-invocation?
   this-oci-container-invocation
 
-  (runtime                  oci-container-invocation-runtime
-                            (default 'docker))
-  (runtime-cli              oci-container-invocation-runtime-cli)
+  (runtime-state            oci-container-invocation-runtime-state)
   (name                     oci-container-invocation-name)
   (command                  oci-container-invocation-command
                             (default '()))
@@ -1171,17 +1174,15 @@ operating-system, or file-like records but ~a was found")
   (options                  oci-container-invocation-options
                             (default '()))
   (run-extra-arguments      oci-container-invocation-run-extra-arguments
-                            (default '()))
-  (runtime-extra-arguments  oci-container-invocation-runtime-extra-arguments
                             (default '())))
 
 (define (oci-container-configuration->oci-container-invocation runtime-state
                                                                config)
   (oci-container-invocation
-   (runtime (oci-runtime-state-runtime runtime-state))
-   (runtime-cli (oci-runtime-state-runtime-cli runtime-state))
+   (runtime-state runtime-state)
    (name
-    (oci-container-shepherd-name runtime config))
+    (oci-container-shepherd-name
+     (oci-runtime-state-runtime runtime-state) config))
    (command
     (oci-container-configuration-command config))
    (image-reference
@@ -1189,16 +1190,14 @@ operating-system, or file-like records but ~a was found")
    (options
     (oci-container-configuration->options config))
    (run-extra-arguments
-    (oci-container-configuration-extra-arguments config))
-   (runtime-extra-arguments
-    (oci-runtime-state-runtime-extra-arguments runtime-state))))
+    (oci-container-configuration-extra-arguments config))))
 
 (define* (oci-image-loader runtime-state name image tag #:key verbose?)
   "Return a file-like object that, once lowered, will evaluate to a program able
 to load IMAGE through RUNTIME-CLI and to tag it with TAG afterwards."
   (with-imported-modules (source-module-closure '((gnu build oci-containers)))
     (program-file
-     (format #f "~a-image-loader" name)
+     (format #f "~a-entrypoint" name)
      #~(begin
          (use-modules (gnu build oci-containers))
          (oci-image-load '#$(oci-runtime-state-runtime runtime-state)
@@ -1206,25 +1205,57 @@ to load IMAGE through RUNTIME-CLI and to tag it with TAG afterwards."
                          #$image #$name #$tag
                          #:verbose? #$verbose?)))))
 
+(define* (oci-image-loader-shepherd-service runtime-state name image
+                                            requirement environment-variables
+                                            #:key verbose?)
+  "Return a Shepherd service object that will load IMAGE through
+RUNTIME-CLI."
+  (define image-reference (oci-image-reference image))
+  (match-record runtime-state <oci-runtime-state>
+                (runtime runtime-cli runtime-requirement user group)
+    (shepherd-service (provision `(,(string->symbol name)))
+                      (requirement requirement)
+                      (one-shot? #t)
+                      (documentation
+                       (string-append
+                        (oci-runtime-name runtime)
+                        " image loader for "
+                        image-reference))
+                      (start
+                       #~(lambda _
+                           (zero?
+                            (spawn-command
+                             (list #$(oci-image-loader
+                                      runtime-state name image
+                                      image-reference
+                                      #:verbose? verbose?))
+                             #$@(if user (list #:user user) '())
+                             #$@(if group (list #:group group) '())
+                             #:environment-variables
+                             #$environment-variables)))))))
+
 (define (oci-container-run-invocation container-invocation)
   "Return a list representing the OCI runtime
 invocation for running containers."
-  ;; run [OPTIONS] IMAGE [COMMAND] [ARG...]
-  `(,(oci-container-invocation-runtime-cli container-invocation)
-    ,@(oci-container-invocation-runtime-extra-arguments container-invocation)
-    "run" "--rm"
-    ,@(if (eq? (oci-container-invocation-runtime container-invocation)
-               'podman)
-          ;; This is because podman takes some time to
-          ;; release container names.  --replace seems
-          ;; to be required to be able to restart services.
-          '("--replace")
-          '())
-    "--name" ,(oci-container-invocation-name container-invocation)
-    ,@(oci-container-invocation-options container-invocation)
-    ,@(oci-container-invocation-run-extra-arguments container-invocation)
-    ,(oci-container-invocation-image-reference container-invocation)
-    ,@(oci-container-invocation-command container-invocation)))
+  (match-record container-invocation <oci-container-invocation>
+                (runtime-state name command image-reference options
+                 run-extra-arguments)
+    ;; run [OPTIONS] IMAGE [COMMAND] [ARG...]
+    `(,(oci-runtime-state-runtime-cli runtime-state)
+      ,@(oci-runtime-state-runtime-extra-arguments runtime-state)
+      "run" "--rm"
+      ,@(if (eq? (oci-runtime-state-runtime runtime-state)
+                 'podman)
+            ;; This is because podman takes some time to
+            ;; release container names.  --replace seems
+            ;; to be required to be able to restart services.
+            '("--replace")
+            '())
+      "--name" ,name
+      ,@options
+      ,@run-extra-arguments
+      ,image-reference
+      ,@command)))
 
 (define* (oci-container-entrypoint name invocation
                                    #:key verbose?
@@ -1259,8 +1290,8 @@ by CONFIG through RUNTIME-CLI."
                  log-file requirement respawn? image)
     (define runtime (oci-runtime-state-runtime runtime-state))
     (define runtime-cli (oci-runtime-state-runtime-cli runtime-state))
-    (define image-reference (oci-image-reference image))
     (define shepherd-name (oci-container-shepherd-name runtime config))
+    (define image-loader-name (oci-image-loader-shepherd-name runtime config))
     (define oci-container-user
       (if (maybe-value-set? user)
           user
@@ -1276,11 +1307,11 @@ by CONFIG through RUNTIME-CLI."
             (oci-state-networks-name state)))
           '()))
     (define volumes-service
-     (if volumes?
-         (list
-          (string->symbol
-           (oci-state-volumes-name state)))
-         '()))
+      (if volumes?
+          (list
+           (string->symbol
+            (oci-state-volumes-name state)))
+          '()))
     (define oci-container-requirement
       (append requirement
               (oci-state-containers-requirement state)
@@ -1323,55 +1354,60 @@ by CONFIG through RUNTIME-CLI."
     (define start-entrypoint
       (oci-container-entrypoint
        shepherd-name invocation
-       #:verbose? verbose?
-       #:pre-script
-       (if (oci-image? image)
-           #~((system*
-               #$(oci-image-loader
-                  runtime-state shepherd-name image
-                  image-reference
-                  #:verbose? verbose?)))
-           #~())))
-
-    (shepherd-service (provision `(,(string->symbol shepherd-name)))
-                      (requirement oci-container-requirement)
-                      (respawn? respawn?)
-                      (auto-start? auto-start?)
-                      (documentation
-                       (string-append
-                        (oci-runtime-name runtime)
-                        " backed Shepherd service for "
-                        (if (oci-image? image) shepherd-name image) "."))
-                      (start
-                       (container-action
-                        (list start-entrypoint)))
-                      (stop
-                       (container-action
-                        (list
-                         (oci-container-entrypoint
-                          shepherd-name (list runtime-cli "rm" "-f" shepherd-name)
-                          #:verbose? verbose?))))
-                      (actions
-                       (append
-                        (list
-                         (oci-command-line-shepherd-action
-                          shepherd-name #~(string-join (list #$@invocation) " ")
-                          start-entrypoint))
-                        (if (oci-image? image)
-                            '()
-                            (list
-                             (shepherd-action
-                              (name 'pull)
-                              (documentation
-                               (format #f "Pull ~a's image (~a)."
-                                       shepherd-name image))
-                              (procedure
-                               (container-action
-                                (list
-                                 (oci-container-entrypoint
-                                  shepherd-name (list runtime-cli "pull" image)
-                                  #:verbose? verbose?)))))))
-                        shepherd-actions)))))
+       #:verbose? verbose?))
+    (append
+     (if (oci-image? image)
+         (list
+          (oci-image-loader-shepherd-service
+           runtime-state image-loader-name
+           image oci-container-requirement
+           environment-variables
+           #:verbose? verbose?))
+         '())
+     (list
+      (shepherd-service (provision `(,(string->symbol shepherd-name)))
+                        (requirement
+                         (if (oci-image? image)
+                             (cons (string->symbol image-loader-name)
+                                   oci-container-requirement)
+                             oci-container-requirement))
+                        (respawn? respawn?)
+                        (auto-start? auto-start?)
+                        (documentation
+                         (string-append
+                          (oci-runtime-name runtime)
+                          " backed Shepherd service for "
+                          (if (oci-image? image) shepherd-name image) "."))
+                        (start
+                         (container-action
+                          (list start-entrypoint)))
+                        (stop
+                         (container-action
+                          (list
+                           (oci-container-entrypoint
+                            shepherd-name (list runtime-cli "rm" "-f" shepherd-name)
+                            #:verbose? verbose?))))
+                        (actions
+                         (append
+                          (list
+                           (oci-command-line-shepherd-action
+                            shepherd-name #~(string-join (list #$@invocation) " ")
+                            start-entrypoint))
+                          (if (oci-image? image)
+                              '()
+                              (list
+                               (shepherd-action
+                                 (name 'pull)
+                                 (documentation
+                                  (format #f "Pull ~a's image (~a)."
+                                          shepherd-name image))
+                                 (procedure
+                                  (container-action
+                                   (list
+                                    (oci-container-entrypoint
+                                     shepherd-name (list runtime-cli "pull" image)
+                                     #:verbose? verbose?)))))))
+                          shepherd-actions)))))))
 
 (define (oci-object-create-invocation object runtime-cli name options
                                       runtime-extra-arguments
@@ -1511,7 +1547,7 @@ in STATE."
   (define volumes?
     (> (length (oci-state-volumes state)) 0))
   (append
-   (map
+   (append-map
     (lambda (c)
       (oci-container-shepherd-service
        state runtime-state c
