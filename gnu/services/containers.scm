@@ -83,6 +83,7 @@
             oci-container-configuration-group
             oci-container-configuration-command
             oci-container-configuration-entrypoint
+            oci-container-configuration-pid-file
             oci-container-configuration-host-environment
             oci-container-configuration-environment
             oci-container-configuration-image
@@ -616,6 +617,11 @@ This field will override the @code{group} field of @code{oci-configuration}.")
    (maybe-string-or-list-of-strings)
    "Overwrite the default entrypoint (@code{ENTRYPOINT}) of the image.  It can
 be either a string, or a list of strings.")
+  (pid-file
+   (maybe-string)
+   "The name of the file where the container PID process will be written.  This
+field is considered only by the @code{'podman} runtime and defaults to
+@code{/run/service-name/service-name.pid}.")
   (host-environment
    (oci-container-host-environment '())
    "Set environment variables in the host environment where @command{docker run}
@@ -1170,6 +1176,8 @@ operating-system, or file-like records but ~a was found")
   (name                     oci-container-invocation-name)
   (command                  oci-container-invocation-command
                             (default '()))
+  (pid-file                 oci-container-invocation-pid-file
+                            (default #f))
   (image-reference          oci-container-invocation-image-reference)
   (options                  oci-container-invocation-options
                             (default '()))
@@ -1237,6 +1245,8 @@ RUNTIME-CLI."
 (define (oci-container-run-invocation container-invocation)
   "Return a list representing the OCI runtime
 invocation for running containers."
+  (define pid-file
+    (oci-container-invocation-pid-file container-invocation))
   (match-record container-invocation <oci-container-invocation>
                 (runtime-state name command image-reference options
                  run-extra-arguments)
@@ -1244,6 +1254,13 @@ invocation for running containers."
     `(,(oci-runtime-state-runtime-cli runtime-state)
       ,@(oci-runtime-state-runtime-extra-arguments runtime-state)
       "run" "--rm"
+      ,@(if (and (eq? (oci-runtime-state-runtime runtime-state)
+                      'podman)
+                 pid-file)
+            ;; When the pid-file location is specified, the container process' PID
+            ;; is written to the pid-file.
+            (list "--pidfile" pid-file)
+            '())
       ,@(if (eq? (oci-runtime-state-runtime runtime-state)
                  'podman)
             ;; This is because podman takes some time to
@@ -1279,6 +1296,14 @@ for the Shepherd service that will run INVOCATION."
               (format #t "No pre script to run..."))
             #$@pre-script))))))
 
+(define (oci-container-pid-file shepherd-name config)
+  "Returns the value of the pid-file field of CONFIG, if it is set.  Otherwise,
+it returns the default value."
+  (define maybe-pid-file (oci-container-configuration-pid-file config))
+  (if (maybe-value-set? maybe-pid-file)
+      maybe-pid-file
+      (string-append "/run/" shepherd-name "/" shepherd-name ".pid")))
+
 (define* (oci-container-shepherd-service state runtime-state config
                                          #:key verbose?
                                          networks?
@@ -1292,6 +1317,7 @@ by CONFIG through RUNTIME-CLI."
     (define runtime-cli (oci-runtime-state-runtime-cli runtime-state))
     (define shepherd-name (oci-container-shepherd-name runtime config))
     (define image-loader-name (oci-image-loader-shepherd-name runtime config))
+    (define pid-file (oci-container-pid-file shepherd-name config))
     (define oci-container-user
       (if (maybe-value-set? user)
           user
@@ -1331,26 +1357,28 @@ by CONFIG through RUNTIME-CLI."
       (oci-container-run-invocation
        (oci-container-configuration->oci-container-invocation
         runtime-state config)))
+    (define command-keywords
+      #~(#$@(if oci-container-user
+                (list #:user oci-container-user)
+                '())
+         #$@(if oci-container-group
+                (list #:group oci-container-group)
+                '())
+         #$@(if (maybe-value-set? log-file)
+                (list #:log-file log-file)
+                '())
+         #$@(if (and oci-container-user (eq? runtime 'podman))
+                (list #:directory
+                      #~(passwd:dir
+                         (getpwnam #$oci-container-user)))
+                '())
+         #:environment-variables
+         #$environment-variables))
     (define* (container-action command)
       #~(lambda _
-          (fork+exec-command
+          (exec-command
            (list #$@command)
-           #$@(if oci-container-user
-                  (list #:user oci-container-user)
-                  '())
-           #$@(if oci-container-group
-                  (list #:group oci-container-group)
-                  '())
-           #$@(if (maybe-value-set? log-file)
-                  (list #:log-file log-file)
-                  '())
-           #$@(if (and oci-container-user (eq? runtime 'podman))
-                  (list #:directory
-                        #~(passwd:dir
-                           (getpwnam #$oci-container-user)))
-                  '())
-           #:environment-variables
-           #$environment-variables)))
+           #$@command-keywords)))
     (define start-entrypoint
       (oci-container-entrypoint
        shepherd-name invocation
@@ -1379,8 +1407,12 @@ by CONFIG through RUNTIME-CLI."
                           " backed Shepherd service for "
                           (if (oci-image? image) shepherd-name image) "."))
                         (start
-                         (container-action
-                          (list start-entrypoint)))
+                         #~(make-forkexec-constructor
+                            (list #$start-entrypoint)
+                            #$@command-keywords
+                            #$@(if (eq? runtime 'podman)
+                                   (list #:pid-file pid-file)
+                                   '())))
                         (stop
                          (container-action
                           (list

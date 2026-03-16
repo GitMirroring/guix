@@ -48805,6 +48805,11 @@ Overwrite the default command (@code{CMD}) of the image.
 Overwrite the default entrypoint (@code{ENTRYPOINT}) of the image.  It can
 be either a string, or a list of strings.
 
+@item @code{pid-file} (type: maybe-string)
+The name of the file where the container PID process will be written.  This
+field is considered only by the @code{'podman} runtime and defaults to
+@code{/run/service-name/service-name.pid}.
+
 @item @code{host-environment} (default: @code{'()}) (type: list)
 Set environment variables in the host environment where @samp{docker run}
 or @samp{podman run} are invoked.  This is especially useful to pass secrets
