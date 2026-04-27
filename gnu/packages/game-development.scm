@@ -893,8 +893,8 @@ support.")
            ftgl
            glew
            gtk+
+           libmpg123
            lua
-           mpg123
            sfml
            wxwidgets))
     (native-inputs
@@ -1458,11 +1458,11 @@ storage through the standard SDL3 API.")
     (inputs
      (list freetype
            libmodplug
+           libmpg123
            libtheora
            libvorbis
            luajit
            mesa
-           mpg123
            openal
            sdl2
            zlib))
@@ -3150,9 +3150,9 @@ a 2D editor view.")
      (list freetype
            guile-3.0-latest
            libjpeg-turbo
+           libmpg123
            libpng
            libvorbis
-           mpg123
            openal
            readline))
     (native-inputs
