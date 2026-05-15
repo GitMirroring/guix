@@ -94,16 +94,18 @@
 (define-public libmpdclient
   (package
     (name "libmpdclient")
-    (version "2.20")
-    (source (origin
-              (method url-fetch)
-              (uri
-               (string-append "https://musicpd.org/download/libmpdclient/"
-                              (car (string-split version #\.))
-                              "/libmpdclient-" version ".tar.xz"))
-              (sha256
-               (base32
-                "0z979qcjc0dqmpn3q9j174a29akx3zmavz6q6hg31hrrx5l3yy8q"))))
+    (version "2.24")
+    (source
+     (origin
+       (method git-fetch)
+       (uri
+        (git-reference
+          (url "https://github.com/MusicPlayerDaemon/libmpdclient")
+          (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "06ghx325qlpbwfll3a9xb4cvw9c4qml5lj54vq00lak7ykprw02l"))))
     (build-system meson-build-system)
     (native-inputs
      (list pkg-config
