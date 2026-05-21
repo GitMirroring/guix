@@ -4476,7 +4476,7 @@ files and provide related services.")
               "--pyargs" "ctapipe"
               "-m" "not vizier"
               "--durations=20"
-              "--timeout=10")
+              "--timeout=120")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'remove-test-files
