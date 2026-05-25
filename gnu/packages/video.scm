@@ -1782,7 +1782,6 @@ operate properly.")
       (list dav1d
             fontconfig
             freetype
-            frei0r-plugins
             gnutls
             opus
             ladspa
@@ -1821,6 +1820,7 @@ operate properly.")
             zlib)))
     (native-inputs
      (list bc
+           frei0r-api
            perl
            pkg-config
            texinfo
@@ -1983,6 +1983,10 @@ filter-scale2ref_keep_aspect,sws-floatimg-cmp")
                      (path (string-join (map dirname dso) ":")))
                 (format #t "setting LD_LIBRARY_PATH to ~s~%" path)
                 (setenv "LD_LIBRARY_PATH" path)))))))
+    (native-search-paths
+     (list (search-path-specification
+            (variable "FREI0R_PATH")
+            (files (list "lib/frei0r-1")))))
     (home-page "https://www.ffmpeg.org/")
     (synopsis "Audio and video framework")
     (description "FFmpeg is a complete, cross-platform solution to record,
