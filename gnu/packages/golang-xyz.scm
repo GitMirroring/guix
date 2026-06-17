@@ -8046,7 +8046,7 @@ signatures.")
 (define-public go-github-com-cyphar-filepath-securejoin
   (package
     (name "go-github-com-cyphar-filepath-securejoin")
-    (version "0.4.1")
+    (version "0.6.1")
     (source
      (origin
        (method git-fetch)
@@ -8055,7 +8055,7 @@ signatures.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0cyqbxmrn3qgq8q0v7xmm9knc8nr60s017yrhkghcwg4yqqpmr9l"))))
+        (base32 "13n9mi04gizc61ccgvxv8c59qxjqlbsjidkrwvh0h2mrgda1psng"))))
     (build-system go-build-system)
     (arguments
      (list
