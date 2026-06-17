@@ -3310,13 +3310,13 @@ constraints (i.e., altitude, airmass, moon separation/illumination, etc.)
 (define-public python-astropy
   (package
     (name "python-astropy")
-    (version "7.2.0")
+    (version "8.0.0rc2")
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "astropy" version))
        (sha256
-        (base32 "0w1hih745aw76zqvfcg9bw8pl4rrmahizgclrl1vdbpyn4kbqj5f"))
+        (base32 "16p8l3dld6ng8r03bsawn64nzddg67rmsn65qka13f50pvlbdlwh"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -3332,7 +3332,7 @@ constraints (i.e., altitude, airmass, moon separation/illumination, etc.)
     (build-system pyproject-build-system)
     (arguments
      (list
-      ;; tests: 31207 passed, 443 skipped, 226 xfailed
+      ;; tests: 31946 passed, 410 skipped, 261 xfailed
       #:test-flags
       #~(list "--pyargs" "astropy"
               ;; XXX: Tests are not thread save when they are more than 8.
@@ -3376,6 +3376,7 @@ constraints (i.e., altitude, airmass, moon separation/illumination, etc.)
            python-pytest-astropy-header
            python-pytest-doctestplus
            python-pytest-xdist
+           python-setuptools
            python-setuptools-scm
            python-sgp4
            python-skyfield
