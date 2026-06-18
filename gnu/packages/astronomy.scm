@@ -5473,6 +5473,32 @@ calculations.")
 files.")
     (license license:expat)))
 
+(define-public python-fits-schema-0.5.6
+  ;; The latest fits_schema removed HeaderSchema class requiring for
+  ;; python-ogadf-schema, remove when a fresh releases are published.
+  (package
+    (inherit python-fits-schema)
+    (name "python-fits-schema")
+    (version "0.5.6")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+              (url "https://github.com/VODF/fits_schema")
+              (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0cmc3z5jwzzgpszdwfjysa43clx96r8g1h59nv4dbmshnwih9kk2"))))
+    (arguments
+     (list
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'remove-broken-entry-point
+            (lambda _
+              (substitute* "setup.cfg"
+                (("fibonacci.*") "")))))))))
+
 (define-public python-fitsblender
   (package
     (name "python-fitsblender")
