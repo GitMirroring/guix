@@ -1563,6 +1563,23 @@ more.")
                    license:lgpl2.0+
                    license:lgpl2.1+))))
 
+;; For Stellarium@26.1, remove when a fresh version is released.
+(define-public indi-2.2.1
+  (hidden-package
+   (package
+     (inherit indi)
+     (name "indi")
+     (version "2.2.1.1")
+     (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+               (url "https://github.com/indilib/indi")
+               (commit (string-append "v" version))))
+        (file-name (git-file-name name version))
+        (sha256
+         (base32 "06p1hdvbs63nmrkzhp9mqw4ayvhx1wbh1w80ikq896k30i9sx5g0")))))))
+
 (define-public iraf-community
   (package
     (name "iraf-community")
@@ -13080,7 +13097,7 @@ deconvolution).  Such post-processing is not performed by Stackistry.")
            eigen
            glm
            gpsd
-           indi
+           indi-2.2.1
            libnova
            md4c
            nlopt
