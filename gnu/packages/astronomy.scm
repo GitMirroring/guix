@@ -8364,7 +8364,7 @@ functions, so that they can be called with scalar or array inputs.")
 (define-public python-pyesorex
   (package
     (name "python-pyesorex")
-    (version "1.0.3")
+    (version "1.0.4")
     (source
      (origin
        (method url-fetch)
@@ -8372,7 +8372,7 @@ functions, so that they can be called with scalar or array inputs.")
              "https://ftp.eso.org/pub/dfs/pipelines/libraries/pyesorex/pyesorex-"
              version ".tar.gz"))
        (sha256
-        (base32 "1ynb9q9aj51mdva1b76fkz7mlw5q8nlfs8f5f70bhila8iincjca"))))
+        (base32 "15whkb4d8aa2ypz2awsg7y7m8vfrxy4djg090167zs1zmi5snnmp"))))
     (build-system pyproject-build-system)
     (native-inputs
      (list python-pytest
