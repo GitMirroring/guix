@@ -92,7 +92,7 @@ POSIX regular expression API.")
 (define-public pcre2
   (package
     (name "pcre2")
-    (version "10.47")
+    (version "10.49")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/PCRE2Project/pcre2"
@@ -100,7 +100,7 @@ POSIX regular expression API.")
                                   "/pcre2-" version ".tar.bz2"))
               (sha256
                (base32
-                "1ivvip83z84wip07zsq6bn2mg84xpapgvs76i4px8l0j8scqrzj7"))))
+                "116k65waxk9zrb52814ifq7di81d2fm5sfb5ivd20sj1pbhmdhak"))))
     (build-system gnu-build-system)
     (outputs '("out" "static"))
     (inputs (list bzip2 readline zlib))
