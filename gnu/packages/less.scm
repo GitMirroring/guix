@@ -26,12 +26,17 @@
   #:use-module (guix gexp)
   #:use-module (guix licenses)
   #:use-module (gnu packages)
+  #:use-module (gnu packages autotools)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages groff)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages pcre)
   #:use-module (gnu packages perl-compression)
   #:use-module (gnu packages file)
   #:use-module (guix packages)
+  #:use-module (guix utils)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu))
@@ -39,19 +44,37 @@
 (define-public less
   (package
     (name "less")
-    (version "608")
+    (version "712")
     (source
      (origin
-       (method url-fetch)
-       (uri (list (string-append "mirror://gnu/less/less-"
-                                 version ".tar.gz")
-                  (string-append "http://www.greenwoodsoftware.com/less/less-"
-                                 version ".tar.gz")))
-       (patches (search-patches "less-hurd-path-max.patch"))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/gwsw/less")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
        (sha256
-        (base32 "02f2d9d6hyf03va28ip620gjc6rf4aikmdyk47h7frqj18pbx6m6"))))
+        (base32 "0dmpd1r2a5ywng8j3dvib0iiby6j61079jl2sahs4smzqksldbpi"))))
     (build-system gnu-build-system)
-    (inputs (list ncurses))
+    (arguments
+     (list
+      #:configure-flags
+      #~(list "--with-regex=pcre2")
+      #:make-flags
+      #~(list (string-append "CC="
+                             #$(cc-for-target)))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'bootstrap)
+          (add-after 'patch-source-shebangs 'patch-makefile-shell
+            (lambda _
+              (patch-makefile-SHELL "Makefile.aut")
+              (patch-makefile-SHELL "Makefile.in")))
+          (add-after 'patch-makefile-shell 'generate-distfiles
+            (lambda _
+              (invoke "make" "-f" "Makefile.aut" "distfiles"))))))
+    (inputs (list bash-minimal ;for less-osc8-open.sh
+                  ncurses pcre2))
+    (native-inputs (list autoconf automake groff perl))
     (home-page "https://www.gnu.org/software/less/")
     (synopsis "Paginator for terminals")
     (description
