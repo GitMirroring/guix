@@ -6277,8 +6277,9 @@ access the technical and tag data for video and audio files.")
     (build-system pyproject-build-system)
     (arguments
      (list
-      ;; tests: X86_64-linux 414 passed, 278 skipped
-      ;;        i686-linux 410 passed, 278 skipped
+      ;; tests: X86_64-linux 395 passed, 278 skipped
+      ;;        i686-linux 391 passed, 278 skipped
+      ;;        riscv64-linux 384 passed, 288 skipped
       #:test-flags
       #~(list "--numprocesses" (number->string (min 8 (parallel-job-count)))
               "--dist" "loadgroup"
@@ -6315,7 +6316,57 @@ access the technical and tag data for video and audio files.")
                          "test_import_all")
                         ;; FileNotFoundError: [Errno 2] No such file or
                         ;; directory: '/sys/class/power_supply'
-                        ("test_misc.py" "TestMisc" "test_serialization")))
+                        ("test_misc.py" "TestMisc" "test_serialization")
+                        ;; FileNotFoundError: [Errno 2] No such file or
+                        ;; directory:
+                        ;; '/tmp/guix-build-python-psutil-7.2.2.drv-0/@psut...'
+                        ("test_connections.py" "TestSystemWideConnections"
+                         "test_multi_sockets_procs")
+                        ;; The following tests fail only under QEMU user-mode
+                        ;; emulation, as used by 'guix build --system=<system>'
+                        ;; on a foreign machine, and pass on native hardware.
+                        ;; OSError: [Errno 25] Inappropriate ioctl for device
+                        ;; (originated from ioctl(SIOCETHTOOL))
+                        ("test_contracts.py" "TestSystemAPITypes"
+                         "test_net_if_stats")
+                        ;; AssertionError: assert '/usr/bin/qemu-...'
+                        ("test_posix.py" "TestProcess" "test_cmdline")
+                        ;; AssertionError: assert 'qemu-aarch-static' ==
+                        ;; 'python'
+                        ("test_posix.py" "TestProcess" "test_name")
+                        ;; AssertionError: assert '/usr/bin/qemu-...'
+                        ("test_process.py" "TestProcess" "test_cmdline")
+                        ;; FileNotFoundError: [Errno 2] No such file or
+                        ;; directory: '/usr/bin/qemu-aarch64-static'
+                        ("test_process.py" "TestProcess" "test_exe")
+                        ;; AssertionError: assert ...
+                        ("test_process.py" "TestProcess" "test_long_cmdline")
+                        ;; AssertionError: assert '@psutil-305-v_k' ==
+                        ;; '@psutil-305-v_kx5iqq01234567890123456789'
+                        ("test_process.py" "TestProcess" "test_long_name")
+                        ;; OSError: [Errno 25] Inappropriate ioctl for device
+                        ;; (originated from ioctl(SIOCETHTOOL))
+                        ("test_scripts.py" "TestExampleScripts"
+                         "test_ifconfig")
+                        ;; OSError: [Errno 25] Inappropriate ioctl for device
+                        ;; (originated from ioctl(SIOCETHTOOL))
+                        ("test_system.py" "TestNetAPIs" "test_net_if_addrs")
+                        ;; OSError: [Errno 25] Inappropriate ioctl for device
+                        ;; (originated from ioctl(SIOCETHTOOL))
+                        ("test_system.py" "TestNetAPIs" "test_net_if_stats")
+                        ;; AssertionError: assert ['/usr/bin/qemu-aarch64-...]
+                        ("test_unicode.py" "TestFSAPIsWithInvalidPath"
+                         "test_proc_cmdline")
+                        ;; UnicodeEncodeError: 'utf-8' codec can't encode
+                        ;; characters in position 205-206: surrogates not
+                        ;; allowed
+                        ("test_unicode.py" "TestFSAPIsWithInvalidPath"
+                         "test_proc_exe")
+                        ;; UnicodeEncodeError: 'utf-8' codec can't encode
+                        ;; characters in position 108-109: surrogates not
+                        ;; allowed
+                        ("test_unicode.py" "TestFSAPIsWithInvalidPath"
+                         "test_proc_name")))
               #$@(if (target-32bit?)
                      (map (lambda (ls) (string-append "--deselect=tests/"
                                                       (string-join ls "::")))
@@ -6326,6 +6377,13 @@ access the technical and tag data for video and audio files.")
                             ;; OSError: [Errno 22] Invalid argument
                             ("test_process.py" "TestProcess"
                              "test_zombie_process")))
+                     '())
+              #$@(if (target-riscv64?)
+                     (map (lambda (ls) (string-append "--deselect=tests/"
+                                                      (string-join ls "::")))
+                          ;; assert False == not (False or False)
+                          '(("test_contracts.py" "TestAvailProcessAPIs"
+                             "test_io_counters")))
                      '()))
       #:phases
       #~(modify-phases %standard-phases
