@@ -274,8 +274,11 @@ in the case of Firefox, it is browser/locales/all-locales."
           (origin
             (method url-fetch)
             (uri (string-append
-                  "https://ftp.mozilla.org/pub/firefox/releases/"
-                  upstream-firefox-version "/source/"
+                  ;; "https://ftp.mozilla.org/pub/firefox/releases/"
+                  ;; upstream-firefox-version "/source/"
+                  ;; XXX Temporarily use release candidate URL:
+                  "https://ftp.mozilla.org/pub/firefox/candidates/"
+                  upstream-firefox-version "-candidates/build1/source/"
                   "firefox-" upstream-firefox-version ".source.tar.xz"))
             (sha256
              (base32
