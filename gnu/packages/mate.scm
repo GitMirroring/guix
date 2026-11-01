@@ -1786,7 +1786,7 @@ can be used as backgrounds in the MATE Desktop environment.")
 (define-public eom
   (package
     (name "eom")
-    (version "1.28.0")
+    (version "1.28.1")
     (source
      (origin
        (method git-fetch)
@@ -1795,7 +1795,8 @@ can be used as backgrounds in the MATE Desktop environment.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "13976l5dpg2ji2qn55q34bp2mj578877y2y8cnk8vgkz9fpgqx9s"))))
+        (base32 "0mszgl352rmd1r900vncw9kns1jc8id59k89pkwjpdqjgp7vrhyq"))
+       (patches (search-patches "eom-fix-girepository.patch"))))
     (build-system glib-or-gtk-build-system)
     (native-inputs (list autoconf
                          autoconf-archive
