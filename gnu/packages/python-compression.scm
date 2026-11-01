@@ -222,7 +222,7 @@ to access its data, so it can be used as a drop-in replacement.")
 (define-public python-brotli
   (package
     (name "python-brotli")
-    (version "1.2.0")
+    (version "1.2.1")
     (source
      (origin
        (method git-fetch)
@@ -231,14 +231,7 @@ to access its data, so it can be used as a drop-in replacement.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0vv7r7m7m6hqhbwb017s4rvc378mjxxvigg37r76imsqlyafbxvq"))
-       (modules '((guix build utils)))
-       (snippet
-        #~(begin
-           ;; Cherry-picked from upstream since the latest release
-           ;; https://github.com/google/brotli/commit/09b0992b6acb7faa6fd3b23f9bc036ea117230fc
-           (substitute* (find-files "scripts" "^lib.*pc\\.in")
-             (("-R\\$\\{libdir\\} ") ""))))))
+        (base32 "12whk4gjf122k70pvii38ikiygrg6ncs3ph8d7qyj1p0f7ivhvmw"))))
     (build-system pyproject-build-system)
     (native-inputs
      (list python-pytest
