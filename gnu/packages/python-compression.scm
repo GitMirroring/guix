@@ -462,7 +462,7 @@ Jump conversion filter by CFFI for Python.")
 (define-public python-brotlicffi
   (package
     (name "python-brotlicffi")
-    (version "1.2.0.1")
+    (version "1.2.1.0")
     (source
      (origin
        (method git-fetch)
@@ -471,7 +471,7 @@ Jump conversion filter by CFFI for Python.")
               (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1jal6gz3crca61gnmxjl37dycak0rsj46kvyfqhkmc15s17f64rm"))
+        (base32 "180q2yc74fcbs28c666rip59mdbsiavbsinqlq5pfs82pcyg2v1p"))
        (snippet
         #~(begin
             (use-modules (guix build utils))
