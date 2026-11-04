@@ -8262,7 +8262,7 @@ and that could be anything you want.")
 (define-public python-h2
   (package
     (name "python-h2")
-    (version "4.3.0")
+    (version "4.4.1")
     (source
      (origin
        (method git-fetch)
@@ -8271,7 +8271,7 @@ and that could be anything you want.")
               (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "00rf0ii4xgdczx5xmv1k6b65q1axvxizbnl20d5vpr512zdix36k"))))
+        (base32 "1yvnrr004w99mmvl6d5x1p5yamxhnjpfhiyhnfwgnq8c1c5ayg3v"))))
     (build-system pyproject-build-system)
     (arguments
      (list
