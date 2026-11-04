@@ -3962,7 +3962,7 @@ files.")
 (define-public python-eventlet
   (package
     (name "python-eventlet")
-    (version "0.41.0")
+    (version "0.41.3")
     (source
      (origin
        (method git-fetch)
@@ -3971,7 +3971,7 @@ files.")
               (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1rn8f5v08n48dh6aycdxfwz17w4xwkgny7bhy5llqn5dl0g2dw43"))))
+        (base32 "1cpj25254is5mpy0qkkwz4vq97djgq90h9sk8isai1z7l0fxld2z"))))
     (build-system pyproject-build-system)
     (arguments
      (list
