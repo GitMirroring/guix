@@ -8216,7 +8216,7 @@ into HTTP/2 frames.")
 (define-public python-hpack
   (package
     (name "python-hpack")
-    (version "4.1.0")
+    (version "4.2.0")
     (source
      (origin
        ;; PyPI tarball is missing some files necessary for the tests.
@@ -8226,7 +8226,7 @@ into HTTP/2 frames.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1kgbx38p3a48iz914dqbx7av750a3s3x5kj3rvpcbh23ah75zg5x"))))
+        (base32 "127cnnidl3w1nch2djm56vmgjf40i3yagrkzg1080pjb2h0bz5w1"))))
     (build-system pyproject-build-system)
     (native-inputs
      (list python-pytest python-setuptools))
