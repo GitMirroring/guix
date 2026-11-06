@@ -3714,7 +3714,9 @@ an SMTP transaction before a message is committed to queue.")
            python-zope-event
            python-zope-interface))
     (native-inputs
-     (list python-pytest python-pdm-backend))
+     (list python-pdm-backend
+           python-pytest
+           python-setuptools))
     (home-page "https://www.list.org")
     (synopsis "Mailing list manager")
     (description
