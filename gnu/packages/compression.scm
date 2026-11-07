@@ -304,7 +304,7 @@ adding and extracting files to/from a tar archive.")
 (define-public ls-qpack
   (package
     (name "ls-qpack")
-    (version "2.6.2")
+    (version "2.7.0")
     (source
      (origin
        (method git-fetch)
@@ -313,16 +313,16 @@ adding and extracting files to/from a tar archive.")
               (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1gipc7lvxxj8wnzbx4mrw4c78x78qf9j6k4j4pnfsanvin219vmi"))
+        (base32 "00z40nq0sl54fzs6vfj1vjy6n7msb4d64c25m4z10n16a6z2vg4i"))
+       (modules '((guix build utils)))
        (snippet
         #~(begin
-            (use-modules (guix build utils))
             (delete-file-recursively "deps/xxhash")))))
     (build-system cmake-build-system)
     (arguments
      (list
       #:configure-flags
-      #~(list "-DLSQPACK_XXH=OFF"
+      #~(list "-DLSQPACK_XXH=OFF"       ; Force the usage of our xxhash.
               "-DLSQPACK_TESTS=ON")))
     (native-inputs
      (list pkg-config))
@@ -332,7 +332,7 @@ adding and extracting files to/from a tar archive.")
     (synopsis "QPACK compression library for use with HTTP/3")
     (description
      "QPACK is the compression mechanism used by
-@url{https://en.wikipedia.org/wiki/HTTP/3, HTTP/3} to compress HTTP headers.
+@url{https://httpwg.org/specs/rfc9114.html, HTTP/3} to compress HTTP headers.
 It's based on specification
 @url{https://tools.ietf.org/html/draft-ietf-quic-qpack-11, QPACK
 Internet-Draft}.")
