@@ -91,7 +91,7 @@
            (shepherd-service
             (documentation "Start the RPC bind daemon.")
             (requirement '(user-processes networking))
-            (provision '(rpcbind-daemon))
+            (provision '(rpcbind rpcbind-daemon))
 
             (start #~(make-forkexec-constructor #$rpcbind-command))
             (stop #~(make-kill-destructor))))))
