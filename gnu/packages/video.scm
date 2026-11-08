@@ -6247,6 +6247,12 @@ tools for styling them, including a built-in real-time video preview.")
      `(#:glib-or-gtk? #t
        #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'make-build-reproducible
+           (lambda _
+             (substitute* "meson.build"
+               ;; Do not record the build directory.
+               (("cdata.*BUILDDIR.*")
+                "cdata.set('BUILDDIR', '')\n"))))
          (add-after 'glib-or-gtk-wrap 'wrap-other-dependencies
            (lambda* (#:key outputs #:allow-other-keys)
              (wrap-program (search-input-file outputs "bin/pitivi")
