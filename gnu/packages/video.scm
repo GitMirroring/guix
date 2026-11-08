@@ -6203,7 +6203,10 @@ tools for styling them, including a built-in real-time video preview.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "12sbl9dlw9rh44mbyfx6pzan4jkhcxidrcbfqih10cyyv50cqjkb"))))
+        (base32 "12sbl9dlw9rh44mbyfx6pzan4jkhcxidrcbfqih10cyyv50cqjkb"))
+       (patches
+        ;; Cherry-picked upstream, to be removed in next release.
+        (search-patches "pitivi-fix-preview-video-sink.patch"))))
     (build-system meson-build-system)
     (native-inputs
      (list gettext-minimal
