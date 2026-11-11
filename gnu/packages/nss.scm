@@ -287,7 +287,7 @@ This package tracks the Extended Support Release (ESR) channel.")
   (package
    (inherit nss)
    (name "nss-rapid")
-   (version "3.131.1")
+   (version "3.132")
    (source
     (origin
       (inherit (package-source nss))
@@ -298,13 +298,22 @@ This package tracks the Extended Support Release (ESR) channel.")
               "releases/NSS_" version-with-underscores "_RTM/src/"
               "nss-" version ".tar.gz")))
       (sha256
-       (base32 "0mlh6lghixifxxlrx6k21i2sin19fa7yqn3dzdflby7kwzcw3nxi"))
+       (base32 "1zr7y9db19h8a5nmq9ql8gzm5x6q593c88a3h0d180d8gf1z977f"))
       (patches
        (search-patches "nss-3.56-pkgconfig.patch"
                        "nss-getcwd-nonnull.patch"
                        "nss-increase-test-timeout.patch"
                        "nss-3.115-disable-pkix-ocsp-tests.patch"))))
-
+    (arguments
+     (substitute-keyword-arguments (package-arguments nss)
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (add-before 'check 'prepare-nss-test-layout
+              (lambda* (#:key tests? make-flags #:allow-other-keys)
+                (when tests?
+                  (apply invoke "make"
+                         (append make-flags
+                                 (list "latest"))))))))))
    (synopsis "Network Security Services (Rapid Release)")
    (description
     "Network Security Services (@dfn{NSS}) is a set of libraries designed to
