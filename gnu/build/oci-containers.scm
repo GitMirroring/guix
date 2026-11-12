@@ -154,7 +154,8 @@ Current directory: ~a~%"
                                         #:key verbose?
                                         (format-string "{{.Name}}")
                                         (log-port (current-error-port)))
-  "Whether NAMES are provisioned in the current OBJECT environment."
+  "Return the subset of NAMES that are provisioned in the current OBJECT
+environment."
   (define environment
     (oci-object-list runtime-cli object
                      #:verbose? verbose?
@@ -162,16 +163,17 @@ Current directory: ~a~%"
   (when verbose?
     (oci-log-debug log-port "~a environment:~{ ~a~}~%" object environment))
 
-  (define available?
-    (every
+  (define available-names
+    (filter
      (lambda (name)
        (oci-object-member name environment #:verbose? verbose?))
      names))
 
   (when verbose?
-   (oci-log-debug log-port "~a service is~a available~%" object (if available? "" " not")))
+   (oci-log-debug log-port "~a service is~a available~%"
+                  object (if (null? available-names) " not" "")))
 
-  available?)
+  available-names)
 
 (define* (oci-image-load runtime runtime-cli tarball name tag
                          #:key verbose?

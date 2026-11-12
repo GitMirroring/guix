@@ -670,7 +670,7 @@ in the past.")
                              #:verbose? #t))))
                   marionette)))
               ;; Allow services to come up on slower machines.
-              (with-retries 80 1 (equal? '("my-network" "podman") (run-test)))))
+              (with-retries 80 1 (equal? '("my-network") (run-test)))))
 
           (test-assert "image loaded"
             (begin
@@ -920,7 +920,7 @@ in the past.")
                   marionette)))
               ;; Allow services to come up on slower machines.
               (with-retries 80 1 (equal?
-                                  '("my-network" "none")
+                                  '("my-network")
                                   (run-test)))))
 
           (test-assert "passing host environment variables"
