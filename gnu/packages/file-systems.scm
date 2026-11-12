@@ -2243,7 +2243,7 @@ while working with large number of files.")
                 (("pkg-config")
                  #$(pkg-config-for-target))))))))
     (native-inputs (list autoconf automake libtool pkg-config))
-    (inputs (list attr fuse-2 xz zlib `(,zstd "lib")))
+    (inputs (list attr fuse xz zlib (list zstd "lib")))
     (home-page "https://github.com/vasi/squashfuse")
     (synopsis "Fuse filesystem to mount squashfs archives")
     (description
