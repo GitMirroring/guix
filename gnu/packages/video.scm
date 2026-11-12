@@ -2606,7 +2606,7 @@ capture.")
 (define-public vlc
   (package
     (name "vlc")
-    (version "3.0.23")
+    (version "3.0.24")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -2615,7 +2615,7 @@ capture.")
                     "/vlc-" version ".tar.xz"))
               (sha256
                (base32
-                "1q77ygpnjvk646diplmiv6kwfmdwbh8daws1z6dsdk9wmbkcm4g8"))))
+                "1psz4b6c1kxr8jv92xs02b8gc3hdwqg0xkyji6dq9mfps41vbjp7"))))
     (build-system gnu-build-system)
     (native-inputs
      (list flex bison gettext-minimal pkg-config))
