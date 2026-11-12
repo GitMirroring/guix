@@ -91,8 +91,8 @@
 
 ;; See browser/locales/l10n-changesets.json for the commit.
 (define firefox-locales
-  (let ((commit "1e95d1c5f519c3fbde715345ae7beb56a2c79077")
-        (revision "3"))
+  (let ((commit "4e2e25a0b94740a84c357e93346ec4f4c94521e3")
+        (revision "4"))
     (package
       (name "firefox-locales")
       (version (git-version "0.0.0" revision commit))
@@ -105,7 +105,7 @@
           (file-name (git-file-name name version))
           (sha256
            (base32
-            "12rlba5g46sw22fxqyjj2jfvplxw45dm2m82lq17ajgqh21frdzf"))))
+            "0n3c3r9piyyvygh7f1f1w899minc1rlsgrqg5g3cd08aikwdfr25"))))
       (build-system copy-build-system)
       (home-page "https://github.com/mozilla-l10n/firefox-l10n")
       (synopsis "Firefox Locales")
@@ -115,16 +115,16 @@ Firefox locales.")
 
 ;; We copy the official build id, which is defined at
 ;; tor-browser-build/rbm.conf (browser_release_date).
-(define %torbrowser-build-date "20261026134500")
+(define %torbrowser-build-date "20261109080000")
 
 ;; To find the last version, look at https://www.torproject.org/download/.
-(define %torbrowser-version "16.0")
+(define %torbrowser-version "16.0.1")
 
 ;; To find the last Firefox version, browse
 ;; https://archive.torproject.org/tor-package-archive/torbrowser/<%torbrowser-version>
 ;; There should be only one archive that starts with
 ;; "src-firefox-tor-browser-".
-(define %torbrowser-firefox-version "153.6.0esr-16.0-1-build3")
+(define %torbrowser-firefox-version "153.7.0esr-16.0-1-build2")
 
 ;; See tor-browser-build/rbm.conf for the list.
 (define %torbrowser-locales (list "ar" "be" "bg" "ca" "cs" "da" "de" "el" "es-ES" "fa"
@@ -139,11 +139,11 @@ Firefox locales.")
     (method git-fetch)
     (uri (git-reference
           (url "https://gitlab.torproject.org/tpo/translation.git")
-          (commit "e1166567b3a76662f0b6223b4eb3ff55a2eca34b")))
+          (commit "a92b2df1444ff83dca9278b97dd4a5746ea95a92")))
     (file-name "translation-base-browser")
     (sha256
      (base32
-      "04qp10jl0bqn65zwca06cbf8hss4ql9yjjmvmv5y9idy838x407v"))))
+      "0hynm4h7y5lznzk86rkdqqh2gjv1wl4b3va82f5j5fxc5my1dh78"))))
 
 ;; See tor-browser-build/projects/translation/config.
 (define torbrowser-translation-specific
@@ -151,11 +151,11 @@ Firefox locales.")
     (method git-fetch)
     (uri (git-reference
           (url "https://gitlab.torproject.org/tpo/translation.git")
-          (commit "523ce42af96512b616417c3b5f229887abd9f565")))
+          (commit "509783257e9707323d1509622cb711f518fde965")))
     (file-name "translation-tor-browser")
     (sha256
      (base32
-      "18n2yifn6hl5kadzls1yshzmw7jwpppa60wnyq8kw19rsbg3hb9n"))))
+      "0blajm0n4p6xflldznvnvzlgii0h6s3h42zlkpi3nzcc0l8g30lw"))))
 
 (define torbrowser-assets
   ;; This is a prebuilt Torbrowser from which we take the assets we need.
@@ -171,7 +171,7 @@ Firefox locales.")
          version "/tor-browser-linux-x86_64-" version ".tar.xz"))
        (sha256
         (base32
-         "090s54xc9i4587kym41jx552l8rv5sxibmfd723q9hl9ffv70cyy"))))
+         "1c3qp8b00h41qp7b88634yii87x1scf7vwnafam1zj101ihssdjv"))))
     (arguments
      (list
       #:install-plan
@@ -212,7 +212,7 @@ Browser.")
          ".tar.xz"))
        (sha256
         (base32
-         "0zx87pnm6wrjdxrwyxjz3x2z20v0vsfysxvw8yigx0kxc61in5v4"))))
+         "1g1mdqk0nxl2v8pn014ym211fx0l43x4gwrs133aqn8wi5fn91dx"))))
     (build-system mozilla-build-system)
     (inputs
      (list lyrebird
