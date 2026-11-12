@@ -24515,7 +24515,7 @@ Go.")
 (define-public go-gitlab-torproject-org-tpo-anti-censorship-pluggable-transports-lyrebird
   (package
     (name "go-gitlab-torproject-org-tpo-anti-censorship-pluggable-transports-lyrebird")
-    (version "0.9.0")
+    (version "0.10.0")
     (source
      (origin
        (method git-fetch)
@@ -24524,7 +24524,7 @@ Go.")
              (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0qzwkjlsn4jg02hzsqhayqy64njd7ps3csb9n8ni2q2vlqmlcg7b"))))
+        (base32 "1k6wf8xc11aa6vbrj3i1d4a89jqm43mxnnmcj0nqswy0dc5wdjhk"))))
     (build-system go-build-system)
     (arguments
      (list
