@@ -4252,19 +4252,21 @@ connection.")))
   (package
     (name "node-source-map")
     (version "0.7.6")
-    (source (origin
-      (method git-fetch)
-      (uri (git-reference
-        (url "https://github.com/mozilla/source-map")
-        (commit version)
-        ;; Download cargo submodule to compile mappings.wasm
-        ;; Also download submodules for test, they are WIP
-        (recursive? #t)))
-      (file-name (git-file-name name version))
-      (sha256
-       (base32 "1l07f5389wr64nn2mdv05jgf5ng78ksa7vbw42s9drlix8biddl6"))
-      (patches
-       (search-patches "node-source-map-fix-mapping-callback.patch"))))
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/mozilla/source-map")
+             (commit version)
+             ;; Download cargo submodule to compile mappings.wasm
+             ;; Also download submodules for test, they are WIP
+             (recursive? #t)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1l07f5389wr64nn2mdv05jgf5ng78ksa7vbw42s9drlix8biddl6"))
+       (patches (search-patches "node-source-map-fix-mapping-callback.patch"))
+       (snippet
+        #~(delete-file "lib/mappings.wasm"))))
     (build-system cargo-build-system)
     (arguments
      (list
