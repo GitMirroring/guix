@@ -821,14 +821,16 @@ UTF-32 support.")
        #:phases
        #~(modify-phases %standard-phases
            (add-after 'unpack 'unvendor-js
-             (lambda* (#:key inputs #:allow-other-keys)
+             (lambda* (#:key inputs native-inputs #:allow-other-keys)
                (symlink
                 (search-input-file
-                 inputs "/share/javascript/mathjax/es5/tex-mml-chtml.js")
+                 (or native-inputs inputs)
+                 "/share/javascript/mathjax/es5/tex-mml-chtml.js")
                 "plotly/templates/tex-mml-chtml-3.2.0.js")
                (symlink
                 (search-input-file
-                 inputs "/share/javascript/mathjax/es5/tex-svg.js")
+                 (or native-inputs inputs)
+                 "/share/javascript/mathjax/es5/tex-svg.js")
                 "plotly/templates/tex-svg-3.2.2.js")
                (invoke "esbuild" #$%plotly-js-for-rust-plotly
                        "--minify" "--outfile=plotly/templates/plotly.min.js")

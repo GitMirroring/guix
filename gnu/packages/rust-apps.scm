@@ -2958,9 +2958,10 @@ container management applications.")
       #:phases
       #~(modify-phases %standard-phases
           (add-before 'check 'set-tzdir
-            (lambda* (#:key inputs #:allow-other-keys)
+            (lambda* (#:key native-inputs inputs #:allow-other-keys)
               (setenv "TZDIR"
-                      (search-input-directory inputs "share/zoneinfo")))))))
+                      (search-input-directory
+                        (or native-inputs inputs) "share/zoneinfo")))))))
     (inputs (cargo-inputs 'numbat))
     (native-inputs (list tzdata-for-tests))
     (home-page "https://numbat.dev/")
