@@ -4302,10 +4302,13 @@ target = ['wasm32-unknown-unknown']
                       "--no-wasm-gc"
                       "--no-wasm-snip"
                       "-o" "../../lib/mappings.wasm")))
-          (replace 'check
+          (add-after 'package 'return-to-top-directory
             (lambda _
-              (chdir "../../")
-              (invoke "node" "test/run-tests.js")))
+              (chdir "../../")))
+          (replace 'check
+            (lambda* (#:key tests? #:allow-other-keys)
+              (when tests?
+                (invoke "node" "test/run-tests.js"))))
           (replace 'install
             (lambda args
               (apply (assoc-ref copy:%standard-phases 'install)
