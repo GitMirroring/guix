@@ -3198,7 +3198,7 @@ hosting sites.")
 (define-public mpv-mpris
   (package
     (name "mpv-mpris")
-    (version "1.2")
+    (version "1.3")
     (source
       (origin
         (method git-fetch)
@@ -3207,7 +3207,7 @@ hosting sites.")
                (commit version)))
         (file-name (git-file-name name version))
         (sha256
-         (base32 "1vnkiy4f1mpx1g6m9i5qivi6lxl888gd7x37qwzaa8vdfrlhssa3"))))
+         (base32 "05dhx1gwz7gpfh7b1flh89dgql3vkndxyl0qa4rqaz1naqgdrycc"))))
     (build-system gnu-build-system)
     (arguments
      (list
