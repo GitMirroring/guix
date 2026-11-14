@@ -98,6 +98,7 @@
 ;;; Copyright © 2026 Edouard Klein <edk@beaver-labs.com>
 ;;; Copyright © 2026 Stampede <stampede@tutamail.com>
 ;;; Copyright © 2026 Untrusem <mysticmoksh@riseup.net>
+;;; Copyright © 2026 Cayetano Santos <csantosb@disroot.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -2871,7 +2872,7 @@ wlr-layer-shell.")
 (define-public mangowm
   (package
     (name "mangowm")
-    (version "0.18.3")
+    (version "0.18.5")
     (source
      (origin
        (method git-fetch)
@@ -2880,7 +2881,7 @@ wlr-layer-shell.")
               (commit version)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "164iwgjrixf52h4s1134bjjs3hf25d1mylm2pgqwpy09w175ga6f"))))
+        (base32 "1jwgdgb85lz533kg818sfd2jz9kbw4sx496s2c6lanxhdh7kwsh7"))))
     (build-system meson-build-system)
     (arguments
      (list
