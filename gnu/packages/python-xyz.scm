@@ -17534,7 +17534,7 @@ tie-resolvement is accelerated by numba.")
 (define-public python-pyzmq
   (package
     (name "python-pyzmq")
-    (version "27.1.0")
+    (version "27.3.0")
     (source
      (origin
        (method git-fetch)
@@ -17543,7 +17543,7 @@ tie-resolvement is accelerated by numba.")
               (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1zw0wm48ja90f616nwd33njplcni7wszw6r660l7cnim81yb3rhq"))))
+        (base32 "0ck2aw2mf9p7nj9mf2nkwj8wvpyr6mfpn18bhihknx7nrvx1g1ip"))))
     (build-system pyproject-build-system)
     (arguments
      (list
@@ -17558,13 +17558,11 @@ tie-resolvement is accelerated by numba.")
               (setenv "ZMQ_DRAFT_API" "1")
               ;; Make sure to prevent building bundled libzmq.
               (setenv "PYZMQ_NO_BUNDLE" "1")))
-          (add-before 'check 'delete-source
-            ;; To prevent loading it and skip build extensions one more times.
+          (add-before 'check 'remove-local-source
             (lambda _
               (delete-file-recursively "zmq"))))))
     (native-inputs
-     (list cmake-minimal
-           ;; python-cffi ; for PyPy
+     (list ;; python-cffi ; for PyPy
            python-cython
            python-packaging
            python-pytest
