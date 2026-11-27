@@ -42711,14 +42711,24 @@ glob patterns, and recursive globbing with configurable behavior.")
 (define-public python-wcwidth
   (package
     (name "python-wcwidth")
-    (version "0.2.13")
-    (source (origin
-              (method url-fetch)
-              (uri (pypi-uri "wcwidth" version))
-              (sha256
-               (base32
-                "1dbj74q1iz349sdkxrkc90f7xd4y7a9bdvgxg3cqdcly7430rskj"))))
+    (version "0.9.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+              (url "https://github.com/jquast/wcwidth")
+              (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "04nvy5prb02nkkqdy50qbm708ma7w15v3fcwjddpxw5fpvl706kj"))))
     (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'check 'remove-local-source
+            (lambda _
+              (delete-file-recursively "wcwidth"))))))
     (native-inputs (list python-pytest python-setuptools))
     (home-page "https://github.com/jquast/wcwidth")
     (synopsis "Measure number of terminal column cells of wide-character codes")
