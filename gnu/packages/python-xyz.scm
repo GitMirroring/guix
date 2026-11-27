@@ -41733,31 +41733,26 @@ Python Standard Library's urllib.parse module.")
 (define-public python-urwid
   (package
     (name "python-urwid")
-    (version "3.0.3")
+    (version "3.0.5")             ;XXX: it's the last version in 3.*.* series
     (source
      (origin
        (method url-fetch)
        (uri (pypi-uri "urwid" version))
        (sha256
         (base32
-         "16zdji1fdr5jbry9h01dxwnadrygs1xj415jqnhmmnlcavfh821h"))))
+         "08ssmm7v620pxvzfap5j40rq80pxrih1phjxv6fc0s6vmzzjggi4"))))
     (build-system pyproject-build-system)
-    (arguments
-     (list
-      #:test-flags
-      #~(list "tests"
-              ;; According to Debian these tests are cursed.
-              ;; https://salsa.debian.org/python-team/packages/urwid/-/blob/debian/2.1.2-2/debian/changelog#L141
-               "--ignore=tests/test_vterm.py")))
+    (arguments (list #:test-flags #~(list "tests")))
     (native-inputs
      (list python-pytest python-setuptools python-setuptools-scm))
     (propagated-inputs
      (list python-wcwidth
            ;; [optional]
            python-pygobject
+           python-pyserial
            python-pyzmq
            python-tornado
-           python-pyserial
+           python-trio
            python-twisted))
     (home-page "https://urwid.org")
     (synopsis "Console user interface library for Python")
