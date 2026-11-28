@@ -2597,7 +2597,7 @@ targeting storage applications.  ISA-L includes:
 (define-public brotli
   (package
     (name "brotli")
-    (version "1.2.0")
+    (version "1.2.1")
     (source
      (origin
        (method git-fetch)
@@ -2606,8 +2606,7 @@ targeting storage applications.  ISA-L includes:
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0vv7r7m7m6hqhbwb017s4rvc378mjxxvigg37r76imsqlyafbxvq"))
-       (patches (search-patches "brotli-CVE-2026-111497.patch"))))
+        (base32 "12whk4gjf122k70pvii38ikiygrg6ncs3ph8d7qyj1p0f7ivhvmw"))))
     (build-system cmake-build-system)
     (home-page "https://github.com/google/brotli")
     (synopsis "General-purpose lossless compression")
