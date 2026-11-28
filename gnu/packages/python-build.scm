@@ -985,24 +985,25 @@ installed with a newer @code{pip} or with wheel's own command line utility.")
     (build-system pyproject-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:tests? #f                      ;no test target
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'install-doc
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let* ((doc (string-append (assoc-ref outputs "doc")
-                                        "/share/doc/" ,name "-" ,version))
-                    (html-doc (string-append doc "/html"))
-                    (examples (string-append doc "/examples")))
-               (mkdir-p html-doc)
-               (mkdir-p examples)
-               (for-each
-                (lambda (dir tgt)
-                  (map (lambda (file)
-                         (install-file file tgt))
-                       (find-files dir ".*")))
-                (list "docs" "htmldoc" "examples")
-                (list doc html-doc examples))))))))
+     (list
+      #:tests? #f                      ;no test target
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'install 'install-doc
+            (lambda _
+                (let* ((doc (string-append #$output:doc
+                                           "/share/doc/" #$name "-" #$version))
+                       (html-doc (string-append doc "/html"))
+                       (examples (string-append doc "/examples")))
+                  (mkdir-p html-doc)
+                  (mkdir-p examples)
+                  (for-each
+                   (lambda (dir tgt)
+                     (map (lambda (file)
+                            (install-file file tgt))
+                          (find-files dir ".*")))
+                   (list "docs" "htmldoc" "examples")
+                   (list doc html-doc examples))))))))
     (native-inputs (list python-flit-core))
     (home-page "https://github.com/pyparsing/pyparsing")
     (synopsis "Python parsing class library")
